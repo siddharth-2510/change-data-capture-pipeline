@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
  * Transformer to extract and transform fields based on FieldConfig
  */
 @Slf4j
-
 public class MainTransformer {
 
     /**

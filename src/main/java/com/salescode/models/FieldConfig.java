@@ -4,6 +4,7 @@ package com.salescode.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FieldConfig {
+public class FieldConfig implements Serializable {
 
     /**
      * Path to the field in JSON (e.g., "orderId", "orderDetails")

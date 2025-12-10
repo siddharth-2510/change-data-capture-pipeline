@@ -49,6 +49,7 @@ public class KafkaSourceProvider {
                 .setTopics(topicPattern)
                 .setGroupId(groupId)
                 .setStartingOffsets(DEFAULT_OFFSETS_INITIALIZER)
+                .setBounded(OffsetsInitializer.latest()) 
                 .setValueOnlyDeserializer(new JsonDeserializationSchema<>(ObjectNode.class))
                 .build();
     }

@@ -28,8 +28,6 @@
                 <excludes>
                   <exclude>org.apache.flink:flink-shaded-force-shading</exclude>
                   <exclude>com.google.code.findbugs:jsr305</exclude>
-                  <exclude>org.slf4j:*</exclude>
-                  <exclude>org.apache.logging.log4j:*</exclude>
                 </excludes>
               </artifactSet>
               <filters>
@@ -53,39 +51,14 @@
       </plugin>
     </plugins>
   </build>
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-streaming-java</artifactId>
-      <version>1.19.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-clients</artifactId>
-      <version>1.19.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
   <properties>
     <lombok.version>1.18.30</lombok.version>
     <maven.compiler.target>11</maven.compiler.target>
     <slf4j.version>1.7.36</slf4j.version>
     <maven.compiler.source>11</maven.compiler.source>
-    <flink.kafka.connector.version>3.0.1-1.17</flink.kafka.connector.version>
+    <flink.kafka.connector.version>3.3.0-1.19</flink.kafka.connector.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jackson.version>2.15.2</jackson.version>
     <flink.version>1.19.0</flink.version>
     <kafka.version>3.4.0</kafka.version>
   </properties>
