@@ -61,10 +61,9 @@ public class KafkaConsumer {
         AllWindowedStream<Map<String, Object>, TimeWindow> windowedStream = processedStream
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(10)));
 
-// ✅ ADD AGGREGATION
         DataStream<BatchSummary> batchResults = windowedStream
                 .aggregate(new CountAggregateFunction());
-
+        batchResults.print();
         processedStream.addSink(sink)
                 .name("Iceberg Sink");
 

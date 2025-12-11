@@ -2,12 +2,12 @@ entities:
   - entity-name: "Order"
     lobs:
       - "simamyuat"
-    kafka-topic: "simamyuat-bulk-reject-order-invoice-update-event"
+    kafka-topic: "entity-change-events-1"
     kafka-broker: "164.52.202.184:9092"
-    group-id: "orders"
+    group-id: "flink-group"
     iceberg-table: "orders"
     output-class: "OrderIcebergEntity"
-    runtime-minutes: 0.1
+    runtime-minutes: 1
     fields:
       - field-path: "orderId"
         type : "String"

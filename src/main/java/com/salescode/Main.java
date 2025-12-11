@@ -46,8 +46,7 @@ public class Main {
                     System.out.println("   Accumulators: Not available");
                 }
                 client.cancel().get();  // Cancel and wait
-                JobExecutionResult result = client.getJobExecutionResult().get();
-                System.out.println(result);
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
