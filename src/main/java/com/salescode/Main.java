@@ -1,56 +1,82 @@
 package com.salescode;
 
-import com.salescode.config.ConfigReader;
-import com.salescode.kafka.KafkaConsumer;
-import com.salescode.kafka.KafkaSourceProvider;
-import com.salescode.models.EntityConfig;
-import com.salescode.models.RootConfig;
-import org.apache.flink.api.common.JobExecutionResult;
+import com.salescode.config.AppConfig;
+import com.salescode.config.ConfigLoader;
+import com.salescode.kafka.KafkaSourceBuilder;
+
+import com.salescode.transformer.OrderHeaderTransformer;
+import com.salescode.transformer.OrderDetailsTransformer;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.core.execution.JobClient;
+
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.util.CloseableIterable;
-import org.apache.flink.util.CloseableIterator;
 
-import java.io.Closeable;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+/**
+ * Main Flink Application:
+ * Kafka → Transform (Order Header + Order Details)
+ */
+@Slf4j
 public class Main {
-    public static void main(String[] args) {
-        ConfigReader configReader  = ConfigReader.getInstance();
-        RootConfig rootConfig = configReader.loadConfig();
-        List<EntityConfig> entityConfigList = rootConfig.getEntities();
-        for(EntityConfig config:entityConfigList) {
-            KafkaConsumer consumer = new KafkaConsumer(config.getEntityName(),config.getFields());
-            StreamExecutionEnvironment environment = consumer.read(config);
-            try {
-                JobClient client = environment.executeAsync();
-                long millis = config.getRuntimeMinutes() * 60 * 1000;
-                try {
-                    var accumulators = client.getAccumulators().get(5, TimeUnit.SECONDS);
-                    System.out.println("   Accumulators: " + accumulators);
-                } catch (Exception e) {
-                    System.out.println("   Accumulators: Not available");
-                }
-                Thread.sleep(millis);
-                try {
-                    var accumulators = client.getAccumulators().get(5, TimeUnit.SECONDS);
-                    System.out.println("   Accumulators: " + accumulators);
-                } catch (Exception e) {
-                    System.out.println("   Accumulators: Not available");
-                }
-                client.cancel().get();  // Cancel and wait
 
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public static void main(String[] args) throws Exception {
+
+        log.info("-------------- Starting Flink Application --------------");
+
+        // ------------------------------------------------------------------
+        // 1️⃣ Load Configuration
+        // ------------------------------------------------------------------
+        AppConfig config = ConfigLoader.loadConfig("application.yaml");
+        log.info("Configuration loaded successfully.");
+
+        // ------------------------------------------------------------------
+        // 2️⃣ Initialize Flink Environment
+        // ------------------------------------------------------------------
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        // ------------------------------------------------------------------
+        // 3️⃣ Build Kafka Source using Config
+        // ------------------------------------------------------------------
+        KafkaSource<ObjectNode> kafkaSource =
+                KafkaSourceBuilder.build(config.getKafka());
+
+        DataStream<ObjectNode> kafkaStream = env.fromSource(
+                kafkaSource,
+                WatermarkStrategy.noWatermarks(),
+                "KafkaSource"
+        );
+
+        log.info("Kafka source initialized.");
+
+        // ------------------------------------------------------------------
+        // 4️⃣ RAW Kafka Print
+        // ------------------------------------------------------------------
+        kafkaStream.print("RAW FROM KAFKA");
+
+        // ------------------------------------------------------------------
+        // 5️⃣ Transform → Order Headers (ck_orders)
+        // ------------------------------------------------------------------
+        DataStream<ObjectNode> orderHeaderStream =
+                kafkaStream.flatMap(new OrderHeaderTransformer());
+
+        orderHeaderStream.print("ORDER_HEADER");
+
+        // ------------------------------------------------------------------
+        // 6️⃣ Transform → Order Details (ck_order_details)
+        // ------------------------------------------------------------------
+        DataStream<ObjectNode> orderDetailsStream =
+                kafkaStream.flatMap(new OrderDetailsTransformer());
+
+        orderDetailsStream.print("ORDER_DETAILS");
+
+        // ------------------------------------------------------------------
+        // 7️⃣ Execute Flink Job
+        // ------------------------------------------------------------------
+        env.execute("Flink Kafka → OrderHeader + OrderDetails Transformation Job");
     }
-
-
 }

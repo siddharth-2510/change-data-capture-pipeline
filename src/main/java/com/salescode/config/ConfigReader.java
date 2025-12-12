@@ -10,7 +10,7 @@ public class ConfigReader {
     private static ConfigReader instance;
     private static RootConfig config;
 
-    private static final String DEFAULT_CONFIG_FILE = "entity-config.yaml";
+    private static final String DEFAULT_CONFIG_FILE = "application.yaml";
 
     /**
      * Private constructor - loads config on initialization

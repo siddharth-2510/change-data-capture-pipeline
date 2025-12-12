@@ -1,0 +1,17 @@
+kafka:
+  brokers: "164.52.202.184:9092"
+  topic: "entity-change-events-1"
+  groupId: "flink-group"
+  readFromEarliest: true
+
+iceberg:
+  warehouse: "s3://warehouse/"
+  catalog-name: "my_catalog"
+  database: "db"
+  table: "orders"
+
+s3:
+  endpoint: "http://localhost:9000"
+  access-key: "minioadmin"
+  secret-key: "minioadmin"
+  path-style-access: true

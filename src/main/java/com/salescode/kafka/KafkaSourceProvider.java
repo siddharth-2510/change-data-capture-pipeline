@@ -61,16 +61,16 @@ public class KafkaSourceProvider {
      */
     public static KafkaSource<ObjectNode> createKafkaSource() {
         // TODO: Read from your config system
-        // For now, using placeholder values
+
 
         String brokers = "YOUR_KAFKA_BROKERS";  // Replace with actual config reading
         String topicPattern = "YOUR_TOPIC";     // Replace with actual config reading
         String groupId = "YOUR_GROUP_ID";       // Replace with actual config reading
 
-//        log.info("Setting up Kafka Source from configuration:");
-//        log.info("Brokers: {}", brokers);
-//        log.info("Topic Pattern: {}", topicPattern);
-//        log.info("Group ID: {}", groupId);
+        log.info("Setting up Kafka Source from configuration:");
+        log.info("Brokers: {}", brokers);
+        log.info("Topic Pattern: {}", topicPattern);
+        log.info("Group ID: {}", groupId);
 
         return createKafkaSource(brokers, topicPattern, groupId);
     }
