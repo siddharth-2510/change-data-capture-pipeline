@@ -8,7 +8,6 @@ import com.salescode.models.RootConfig;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.core.execution.JobClient;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.CloseableIterable;
 import org.apache.flink.util.CloseableIterator;

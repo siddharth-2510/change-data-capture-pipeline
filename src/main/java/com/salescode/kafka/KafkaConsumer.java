@@ -50,25 +50,46 @@ public class KafkaConsumer {
                 WatermarkStrategy.noWatermarks(),
                 "Kafka Source"
         );
+
         DataStream<Map<String, Object>> processedStream = kafkaStream
-                .map(objectNode ->
-                        (Map<String, Object>) OBJECT_MAPPER.convertValue(objectNode, Map.class)
-                )
-                .returns(TypeInformation.of(new TypeHint<Map<String, Object>>() {}))  // ✅ Explicit type info
-                .name("ObjectNode to Map")
+                .map(objectNode -> {
+                    // full Kafka message as map
+                    Map<String, Object> root = OBJECT_MAPPER.convertValue(objectNode, Map.class);
+
+                    // Extract features[0]
+                    Object featuresObj = root.get("features");
+
+                    if (featuresObj instanceof List) {
+                        List<?> featuresList = (List<?>) featuresObj;
+
+                        if (!featuresList.isEmpty() && featuresList.get(0) instanceof Map) {
+                            return (Map<String, Object>) featuresList.get(0);  // <-- ACTUAL ORDER
+                        }
+                    }
+
+                    // fallback (no features or invalid)
+                    return root;
+                })
+                .returns(TypeInformation.of(new TypeHint<Map<String, Object>>() {}))
+                .name("Extract features[0]")
                 .map(new TransformFunction(fieldConfigs))
                 .name("Transform Fields");
+
+        // WINDOWING
         AllWindowedStream<Map<String, Object>, TimeWindow> windowedStream = processedStream
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(10)));
 
-        DataStream<BatchSummary> batchResults = windowedStream
-                .aggregate(new CountAggregateFunction());
+        DataStream<BatchSummary> batchResults = windowedStream.aggregate(new CountAggregateFunction());
+
         batchResults.print();
+
+        // WRITE TO ICEBERG
         processedStream.addSink(sink)
                 .name("Iceberg Sink");
 
         return env;
     }
+
 
     /**
      * Static inner class for field transformation

@@ -89,8 +89,7 @@ public class MainTransformer {
             }
         }
 
-        return outputList;
-    }
+        return outputList;}
 
     /**
      * Transform a Map/Object field by recursively processing with sub-field configurations
