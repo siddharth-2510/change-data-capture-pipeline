@@ -35,7 +35,7 @@ public class CreateIcebergTables {
     // ------------------------------------------------------------
     // CREATE ck_orders TABLE
     // ------------------------------------------------------------
-    private static void createOrdersTable(Catalog catalog) {
+    public static void createOrdersTable(Catalog catalog) {
 
         TableIdentifier tableId = TableIdentifier.of("db", "orders");
 
@@ -108,7 +108,7 @@ public class CreateIcebergTables {
     // ------------------------------------------------------------
     // CREATE ck_order_details TABLE
     // ------------------------------------------------------------
-    private static void createOrderDetailsTable(Catalog catalog) {
+    public static void createOrderDetailsTable(Catalog catalog) {
 
         TableIdentifier tableId = TableIdentifier.of("db", "order_details");
 

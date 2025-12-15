@@ -3,7 +3,7 @@ package com.salescode;
 import com.salescode.config.AppConfig;
 import com.salescode.config.ConfigLoader;
 import com.salescode.kafka.KafkaSourceBuilder;
-import com.salescode.iceberg.IcebergUtil;
+import com.salescode.iceberg.*;
 import com.salescode.sink.IcebergSinkBuilder;
 
 import com.salescode.transformer.OrderHeaderTransformer;
@@ -41,6 +41,10 @@ public class Main {
                 // ------------------------------------------------------------------
                 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
                 env.setParallelism(1);
+
+                log.info("Ensuring Iceberg tables exist....");
+                IcebergTableInitializer.ensureTablesExist();
+                log.info("Iceberg tables are ready.");
 
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
                 env.enableCheckpointing(10000); // Checkpoint every 10 seconds
