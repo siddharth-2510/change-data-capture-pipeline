@@ -8,13 +8,13 @@ public class IcebergUtil {
 
     public static TableLoader ordersTableLoader() {
         return TableLoader.fromHadoopTable(
-                "s3a://warehouse/db/orders",
+                "s3a://warehouse-v1/db/orders",
                 hadoopConf());
     }
 
     public static TableLoader orderDetailsTableLoader() {
         return TableLoader.fromHadoopTable(
-                "s3a://warehouse/db/order_details",
+                "s3a://warehouse-v1/db/order_details",
                 hadoopConf());
     }
 

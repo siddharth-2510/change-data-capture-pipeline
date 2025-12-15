@@ -7,10 +7,23 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.Arra
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.flink.util.Collector;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
+/**
+ * Transforms Kafka CDC events into Order Header records.
+ * Adds CDC versioning fields for Iceberg table compatibility.
+ */
 @Slf4j
 public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, ObjectNode> {
 
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    // Formatter for timestamps like '2025-12-10 15:43:35'
+    private static final DateTimeFormatter CUSTOM_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public void flatMap(ObjectNode event, Collector<ObjectNode> out) throws Exception {
@@ -28,7 +41,22 @@ public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, Objec
             ObjectNode feature = (ObjectNode) features.get(i);
             ObjectNode row = mapper.createObjectNode();
 
-            // --- REQUIRED CK_ORDERS FIELDS ---
+            // ============================================================
+            // CDC Versioning Fields (required for Iceberg v2)
+            // ============================================================
+            String entityId = text(feature, "id");
+            String versionTsStr = text(feature, "lastModifiedTime");
+            Instant versionInstant = parseTimestamp(versionTsStr);
+
+            row.put("entity_id", entityId);
+            row.put("version_ts", versionInstant.toEpochMilli());
+            row.put("event_type", "UPSERT");
+            row.put("ingest_ts", Instant.now().toEpochMilli());
+            row.put("is_latest", true);
+
+            // ============================================================
+            // Original Business Fields
+            // ============================================================
             row.put("id", text(feature, "id"));
             row.put("lob", text(feature, "lob"));
             row.put("active_status", text(feature, "activeStatus"));
@@ -80,14 +108,38 @@ public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, Objec
             row.put("group_id", text(feature, "groupId"));
 
             // extendedAttributes → store as JSON string
-            row.put("extended_attributes", feature.get("extendedAttributes") != null ?
-                    feature.get("extendedAttributes").toString() : null);
+            row.put("extended_attributes",
+                    feature.get("extendedAttributes") != null ? feature.get("extendedAttributes").toString() : null);
 
             // discountInfo[] exists → store full JSON
-            row.put("discount_info", feature.get("discountInfo") != null ?
-                    feature.get("discountInfo").toString() : null);
+            row.put("discount_info",
+                    feature.get("discountInfo") != null ? feature.get("discountInfo").toString() : null);
 
             out.collect(row);
+        }
+    }
+
+    /**
+     * Parse timestamp string supporting multiple formats:
+     * - '2025-12-10 15:43:35' (custom format)
+     * - '2025-12-10T15:43:35Z' (ISO-8601)
+     */
+    private Instant parseTimestamp(String tsStr) {
+        if (tsStr == null || tsStr.isEmpty()) {
+            return Instant.now();
+        }
+        try {
+            // Try custom format first (yyyy-MM-dd HH:mm:ss)
+            LocalDateTime ldt = LocalDateTime.parse(tsStr, CUSTOM_FORMATTER);
+            return ldt.toInstant(ZoneOffset.UTC);
+        } catch (DateTimeParseException e1) {
+            try {
+                // Try ISO-8601 format
+                return Instant.parse(tsStr);
+            } catch (DateTimeParseException e2) {
+                log.warn("Could not parse timestamp '{}', using current time", tsStr);
+                return Instant.now();
+            }
         }
     }
 
