@@ -8,12 +8,14 @@ import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.formats.json.JsonDeserializationSchema;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 
 @Slf4j
 public class KafkaSourceBuilder {
 
     // Prevent instantiation
-    private KafkaSourceBuilder() {}
+    private KafkaSourceBuilder() {
+    }
 
     /**
      * Build KafkaSource<ObjectNode> using provided KafkaConfig.
@@ -26,10 +28,12 @@ public class KafkaSourceBuilder {
         log.info(" - Group ID: {}", config.getGroupId());
         log.info(" - Read from earliest: {}", config.isReadFromEarliest());
 
-        OffsetsInitializer offsets =
-                config.isReadFromEarliest()
-                        ? OffsetsInitializer.earliest()
-                        : OffsetsInitializer.committedOffsets(); // resume from checkpoint
+        // Use committedOffsets with EARLIEST fallback:
+        // - If committed offsets exist: resume from them (no reprocessing)
+        // - If no committed offsets: start from earliest (first run)
+        OffsetsInitializer offsets = config.isReadFromEarliest()
+                ? OffsetsInitializer.earliest()
+                : OffsetsInitializer.committedOffsets(OffsetResetStrategy.EARLIEST);
 
         return KafkaSource.<ObjectNode>builder()
                 .setBootstrapServers(config.getBrokers())
