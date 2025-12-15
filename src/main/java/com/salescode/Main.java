@@ -43,7 +43,7 @@ public class Main {
                 env.setParallelism(1);
 
                 log.info("Ensuring Iceberg tables exist....");
-                IcebergTableInitializer.ensureTablesExist();
+                IcebergTableInitializer.ensureTablesExist(config);
                 log.info("Iceberg tables are ready.");
 
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
@@ -87,8 +87,9 @@ public class Main {
                 log.info("Setting up Iceberg sinks...");
 
                 // Load table loaders for both tables
-                TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader();
-                TableLoader orderDetailsTableLoader = IcebergUtil.orderDetailsTableLoader();
+                TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg(), config.getS3());
+                TableLoader orderDetailsTableLoader = IcebergUtil.orderDetailsTableLoader(config.getIceberg(),
+                                config.getS3());
 
                 // Create and attach Iceberg sinks
                 var orderHeaderSink = IcebergSinkBuilder.createOrderHeaderSink(orderHeaderStream, ordersTableLoader);

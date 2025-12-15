@@ -1,5 +1,9 @@
 package com.salescode.iceberg;
 
+import com.salescode.config.AppConfig;
+import com.salescode.config.ConfigLoader;
+import com.salescode.config.IcebergConfig;
+import com.salescode.config.S3Config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.Schema;
@@ -41,15 +45,17 @@ public class CreateIcebergTables {
 
     public static void main(String[] args) {
 
-        Configuration conf = new Configuration();
-        conf.set("fs.s3a.endpoint", "http://localhost:9000");
-        conf.set("fs.s3a.access.key", "minio");
-        conf.set("fs.s3a.secret.key", "minio123");
-        conf.set("fs.s3a.path.style.access", "true");
-        conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
+        // Load config from application.yaml
+        AppConfig appConfig = ConfigLoader.loadConfig("application.yaml");
+        IcebergConfig icebergConfig = appConfig.getIceberg();
+        S3Config s3Config = appConfig.getS3();
 
-        String warehouse = "s3a://bucket-cd";
-        Catalog catalog = new HadoopCatalog(conf, warehouse);
+        log.info("Using warehouse: {}", icebergConfig.getWarehouse());
+        log.info("Using S3 endpoint: {}", s3Config.getEndpoint());
+
+        Configuration conf = IcebergUtil.hadoopConf(s3Config);
+
+        Catalog catalog = new HadoopCatalog(conf, icebergConfig.getWarehouse());
 
         createOrdersTable(catalog);
         createOrderDetailsTable(catalog);
