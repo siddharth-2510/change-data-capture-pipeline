@@ -47,8 +47,8 @@ public class Main {
                 log.info("Iceberg tables are ready.");
 
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
-                env.enableCheckpointing(10000); // Checkpoint every 10 seconds
-                log.info("Checkpointing enabled (10s interval)");
+                env.enableCheckpointing(300_000); // Checkpoint every 10 seconds
+                log.info("Checkpointing enabled (5min  interval)");
 
                 // ------------------------------------------------------------------
                 // 3️⃣ Build Kafka Source using Config
