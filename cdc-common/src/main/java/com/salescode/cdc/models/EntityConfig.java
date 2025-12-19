@@ -84,4 +84,49 @@ public class EntityConfig implements Serializable {
      */
     @JsonProperty("enabled")
     private boolean enabled = true;
+
+    // Getters (Lombok @Data not processing, adding manually)
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public List<String> getLobs() {
+        return lobs;
+    }
+
+    public String getKafkaTopic() {
+        return kafkaTopic;
+    }
+
+    public String getKafkaBroker() {
+        return kafkaBroker;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public String getIcebergTable() {
+        return icebergTable;
+    }
+
+    public String getOutputClass() {
+        return outputClass;
+    }
+
+    public Integer getRuntimeMinutes() {
+        return runtimeMinutes;
+    }
+
+    public List<com.salescode.cdc.models.FieldConfig> getFields() {
+        return fields;
+    }
+
+    public List<String> getPartitionKeys() {
+        return partitionKeys;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 }

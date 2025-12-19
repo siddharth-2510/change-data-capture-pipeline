@@ -11,10 +11,6 @@ import java.util.List;
  * Configuration for a field with support for nested sub-fields.
  * This is a recursive structure - sub-fields can contain their own sub-fields.
  */
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class FieldConfig implements Serializable {
 
     /**
@@ -36,6 +32,63 @@ public class FieldConfig implements Serializable {
      */
     @JsonProperty("sub-fields")
     private List<FieldConfig> subFields;
+
+    /**
+     * Default constructor
+     */
+    public FieldConfig() {
+    }
+
+    /**
+     * Constructor with all fields
+     */
+    public FieldConfig(String fieldPath, String type, List<FieldConfig> subFields) {
+        this.fieldPath = fieldPath;
+        this.type = type;
+        this.subFields = subFields;
+    }
+
+    /**
+     * Getter for fieldPath
+     */
+    public String getFieldPath() {
+        return fieldPath;
+    }
+
+    /**
+     * Setter for fieldPath
+     */
+    public void setFieldPath(String fieldPath) {
+        this.fieldPath = fieldPath;
+    }
+
+    /**
+     * Getter for type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Setter for type
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * Getter for subFields
+     */
+    public List<FieldConfig> getSubFields() {
+        return subFields;
+    }
+
+    /**
+     * Setter for subFields
+     */
+    public void setSubFields(List<FieldConfig> subFields) {
+        this.subFields = subFields;
+    }
 
     /**
      * Check if this field has sub-fields

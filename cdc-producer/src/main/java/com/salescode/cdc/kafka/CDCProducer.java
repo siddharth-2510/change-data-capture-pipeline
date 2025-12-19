@@ -25,7 +25,7 @@ public class CDCProducer {
     public static Producer<String, CDCKafkaObject> createCDCProducer() {
         Properties props = getCommonProperties();
         props.put(ProducerConfig.CLIENT_ID_CONFIG, CDCKafkaConstants.CDC_CLIENT_ID);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CDCKafkaConstants.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CDCEventSerializer.class.getName());
         return new KafkaProducer<>(props);
     }
 

@@ -10,37 +10,39 @@
     <packaging>pom</packaging>
     <name>CDC Pipeline SDK</name>
 
-    <!-- ✅ THIS IS THE KEY: List all modules -->
     <modules>
         <module>cdc-common</module>
         <module>cdc-flink-job</module>
         <module>cdc-producer</module>
-        <module>cdc-consumer</module>
-        <module>cdc-spring-boot-starter</module>
     </modules>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <!-- 🔧 VERSION FIXES ONLY -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <flink.version>1.19.0</flink.version>
         <kafka.version>3.4.0</kafka.version>
         <flink.kafka.connector.version>3.3.0-1.19</flink.kafka.connector.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.36</lombok.version>
         <slf4j.version>1.7.32</slf4j.version>
         <jackson.version>2.15.2</jackson.version>
         <spring.boot.version>2.7.14</spring.boot.version>
     </properties>
 
-    <!-- ✅ Centralized dependency versions -->
     <dependencyManagement>
         <dependencies>
-            <!-- Internal modules -->
             <dependency>
                 <groupId>com.salescode</groupId>
                 <artifactId>cdc-common</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.salescode</groupId>
@@ -53,7 +55,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -101,7 +102,6 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
-                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -109,13 +109,16 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- 🔧 VERSION FIX -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.11.0</version>
                     <configuration>
-                        <source>11</source>
-                        <target>11</target>
+                        <release>17</release>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
             </plugins>

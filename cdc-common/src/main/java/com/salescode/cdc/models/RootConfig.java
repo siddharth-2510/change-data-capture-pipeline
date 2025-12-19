@@ -17,4 +17,9 @@ public class RootConfig {
 
     @JsonProperty("entities")
     private List<com.salescode.cdc.models.EntityConfig> entities;
+
+    // Getter (Lombok @Data not processing, adding manually)
+    public List<com.salescode.cdc.models.EntityConfig> getEntities() {
+        return entities;
+    }
 }

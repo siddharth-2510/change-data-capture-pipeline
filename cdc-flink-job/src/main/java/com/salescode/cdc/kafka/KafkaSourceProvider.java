@@ -1,19 +1,21 @@
 package com.salescode.cdc.kafka;
 
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.formats.json.JsonDeserializationSchema;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for creating Kafka sources.
  * Simple utility class with static methods - no instantiation needed.
  */
-@Slf4j
 public class KafkaSourceProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaSourceProvider.class);
 
     // Private constructor - prevents creating objects of this class
     private KafkaSourceProvider() {
