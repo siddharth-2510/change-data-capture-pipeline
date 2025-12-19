@@ -1,0 +1,7 @@
+kafka-topic: "entity-change-{lob}-{entity}"
+kafka-broker: "164.52.202.184:9092"
+group-id: "{lob}-{entity}"
+entities: ["Orders","Sales","OutletActivity"]
+
+
+
