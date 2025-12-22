@@ -144,11 +144,12 @@ public class CreateIcebergTables {
                 Types.NestedField.optional(59, "reference_order_number", Types.StringType.get()));
 
         // ============================================================
-        // Partition Strategy: bucket + time-based
+        // Partition Strategy: LOB + bucket + time-based
         // ============================================================
         PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
-                .bucket("entity_id", 16)
-                .year("version_ts")
+                .identity("lob") // Primary: LOB-based organization
+                .bucket("entity_id", 16) // Secondary: hash bucketing for distribution
+                .year("version_ts") // Tertiary: time-based for time-travel
                 .build();
 
         Table table = catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);
@@ -238,11 +239,12 @@ public class CreateIcebergTables {
                 Types.NestedField.optional(61, "site_id", Types.StringType.get()));
 
         // ============================================================
-        // Partition Strategy: bucket + time-based
+        // Partition Strategy: LOB + bucket + time-based
         // ============================================================
         PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
-                .bucket("entity_id", 16)
-                .month("version_ts")
+                .identity("lob") // Primary: LOB-based organization
+                .bucket("entity_id", 16) // Secondary: hash bucketing for distribution
+                .month("version_ts") // Tertiary: time-based for time-travel
                 .build();
 
         Table table = catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);

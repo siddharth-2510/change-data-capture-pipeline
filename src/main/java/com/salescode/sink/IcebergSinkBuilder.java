@@ -159,7 +159,7 @@ public class IcebergSinkBuilder {
             row.setField(10, null); // extended_attributes
             row.setField(11, null); // hash
             row.setField(12, null); // last_modified_time
-            row.setField(13, null); // lob
+            row.setField(13, toStringData(node, "lob"));
             row.setField(14, null); // modified_by
             row.setField(15, null); // source
             row.setField(16, null); // version
