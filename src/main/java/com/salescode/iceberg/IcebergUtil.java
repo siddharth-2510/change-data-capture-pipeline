@@ -30,6 +30,13 @@ public class IcebergUtil {
         conf.set("fs.s3a.endpoint", s3Config.getEndpoint());
         conf.set("fs.s3a.access.key", s3Config.getAccessKey());
         conf.set("fs.s3a.secret.key", s3Config.getSecretKey());
+
+        // Set session token if present (for AWS temporary credentials)
+        if (s3Config.getSessionToken() != null && !s3Config.getSessionToken().isEmpty()) {
+            conf.set("fs.s3a.session.token", s3Config.getSessionToken());
+            log.info("AWS session token configured for temporary credentials");
+        }
+
         conf.set("fs.s3a.path.style.access", String.valueOf(s3Config.isPathStyleAccess()));
         conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
         return conf;

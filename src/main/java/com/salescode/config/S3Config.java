@@ -15,6 +15,9 @@ public class S3Config {
     @JsonProperty("secret-key")
     private String secretKey;
 
+    @JsonProperty("session-token")
+    private String sessionToken;
+
     @JsonProperty("path-style-access")
     private boolean pathStyleAccess;
 }

@@ -5,13 +5,14 @@ kafka:
   readFromEarliest: false
 
 iceberg:
-  warehouse: "s3a://warehouse-v1"
+  warehouse: "s3a://sc-developer-bucket"
   catalog-name: "my_catalog"
   database: "db"
   table: "orders"
 
 s3:
-  endpoint: "http://localhost:9000"
-  access-key: "minio"
-  secret-key: "minio123"
-  path-style-access: true
+  endpoint: "https://s3.ap-south-1.amazonaws.com"
+  access-key: "ASIATQDQ4KPF7JEUEBHW"
+  secret-key: "rJKZoLrptNRTLH9m+GJVR6I7icDuI3qpeDulIoZn"
+  session-token: "IQoJb3JpZ2luX2VjEFsaCmFwLXNvdXRoLTEiRjBEAiBtYjKMoEfGWgCteVVD5+ZhCq4Q667cMsrSV0NIH7UjngIgY03h9PEtLEJWGeCgsgfPD0vfTY8m2R3SIqZkXqrwpAoqkQMIJBAAGgwyNDA3NTQ5MDYwNTkiDHuaIgudG5XUA2JNYSruAieekiJeSXIyy1sNaV4I1GXEltkyYWV7M1F/7l7xAO2BdAIIaCf0RZ2YxOb/H6vjAnqf4f/6UsGgDm0v+htxxdkietXu5+tYb/42v6zDXNW4qv33cfXdHiofGAES3knKDP894FUePGLGxVF7TH2//GVnap3QS3XHqHciCoF7Q3rON/p0vCASbIuwKTFdw7s/4n4IWQsJSizrqag1CAMOr7CGuoVF8nASRgXhTphFcmT8G5hK3K/BxGRA47l0tGGBJVhYmHqRdpN17LsA64sZZAa6aZAol2ZSQ9ntwEImwW5EyAoemTBu+QQSPh8nvK0+MJORbNpC+4TdHUptY8gtYlmw1xo1vRLM0bbK3gx39iuGX9tXqD5OvBm/90t3bdRz9itlDGNtXgmlZd5vI+H8s6SbtT9qR+3kVpaAN4eHsT3Mk9wI2bkFgcEX6NLxiwIfOEIAwupn3LjovBWa8rv3cNaFMkrF4cCN5NOrJuXY0jDemK/KBjqlAW6l5EYtMdZND48bQZvytdOBRXzSnKYDWw3wWLChDBPYctVjfwzLUU7/Gn1bzwQjhoj88xswLF3K2amlEnp19q0gcAuw75hgySiUuw/jmIhl7CiawSeaWR6sGVICenhlnQOGimXXqe2OwdWL2pIQML6xDyZGNp+NSqLhrvFM1Xj4pVcWFU7eaFd7UlyodXTyyxGf/kiLtRqOuZDRwr9bLOTysC+hPg=="
+  path-style-access: false
