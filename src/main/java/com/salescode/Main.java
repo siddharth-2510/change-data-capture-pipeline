@@ -7,7 +7,6 @@ import com.salescode.iceberg.*;
 import com.salescode.sink.IcebergSinkBuilder;
 
 import com.salescode.transformer.OrderHeaderTransformer;
-import com.salescode.transformer.OrderDetailsTransformer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,33 +74,20 @@ public class Main {
                 orderHeaderStream.print("ORDER_HEADER");
 
                 // ------------------------------------------------------------------
-                // 6️⃣ Transform → Order Details (ck_order_details)
+                // 6️⃣ Write to Iceberg Tables in MinIO
                 // ------------------------------------------------------------------
-                DataStream<ObjectNode> orderDetailsStream = kafkaStream.flatMap(new OrderDetailsTransformer());
+                log.info("Setting up Iceberg sink...");
 
-                orderDetailsStream.print("ORDER_DETAILS");
-
-                // ------------------------------------------------------------------
-                // 7️⃣ Write to Iceberg Tables in MinIO
-                // ------------------------------------------------------------------
-                log.info("Setting up Iceberg sinks...");
-
-                // Load table loaders for both tables
+                // Load table loader for orders table
                 TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg(), config.getS3());
-                TableLoader orderDetailsTableLoader = IcebergUtil.orderDetailsTableLoader(config.getIceberg(),
-                                config.getS3());
 
-                // Create and attach Iceberg sinks
+                // Create and attach Iceberg sink
                 var orderHeaderSink = IcebergSinkBuilder.createOrderHeaderSink(orderHeaderStream, ordersTableLoader);
                 log.info("✔ Order Headers sink configured → db.orders");
 
-                var orderDetailsSink = IcebergSinkBuilder.createOrderDetailsSink(orderDetailsStream,
-                                orderDetailsTableLoader);
-                log.info("✔ Order Details sink configured → db.order_details");
-
                 // ------------------------------------------------------------------
-                // 8️⃣ Execute Flink Job
+                // 7️⃣ Execute Flink Job
                 // ------------------------------------------------------------------
-                env.execute("Flink Kafka → Iceberg Pipeline (Orders + OrderDetails)");
+                env.execute("Flink Kafka → Iceberg Pipeline (Orders)");
         }
 }

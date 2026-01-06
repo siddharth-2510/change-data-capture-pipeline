@@ -58,13 +58,13 @@ public class IcebergSinkBuilder {
 
     // ============================================================
     // Order Headers Mapper: ObjectNode → RowData
-    // Schema: 59 fields (5 versioning + 54 business)
+    // Schema: 60 fields (5 versioning + 55 business)
     // ============================================================
     private static class OrderHeaderMapper implements MapFunction<ObjectNode, RowData> {
 
         @Override
         public RowData map(ObjectNode node) throws Exception {
-            GenericRowData row = new GenericRowData(59);
+            GenericRowData row = new GenericRowData(60);
 
             // CDC Versioning Fields (indices 0-4)
             row.setField(0, toStringData(node, "entity_id")); // required
@@ -128,6 +128,7 @@ public class IcebergSinkBuilder {
             row.setField(56, toBoolean(node, "in_range"));
             row.setField(57, toDouble(node, "nw"));
             row.setField(58, null); // reference_order_number
+            row.setField(59, toStringData(node, "order_details"));
 
             return row;
         }

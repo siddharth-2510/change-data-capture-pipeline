@@ -5,7 +5,7 @@ kafka:
   readFromEarliest: false
 
 iceberg:
-  warehouse: "s3a://warehouse-v1"
+  warehouse: "s3a://nwbucket"
   catalog-name: "my_catalog"
   database: "db"
   table: "orders"

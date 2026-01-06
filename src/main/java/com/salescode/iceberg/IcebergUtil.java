@@ -19,12 +19,6 @@ public class IcebergUtil {
         return TableLoader.fromHadoopTable(tablePath, hadoopConf(s3Config));
     }
 
-    public static TableLoader orderDetailsTableLoader(IcebergConfig icebergConfig, S3Config s3Config) {
-        String tablePath = icebergConfig.getWarehouse() + "/" + icebergConfig.getDatabase() + "/order_details";
-        log.info("Loading order_details table from: {}", tablePath);
-        return TableLoader.fromHadoopTable(tablePath, hadoopConf(s3Config));
-    }
-
     public static Configuration hadoopConf(S3Config s3Config) {
         Configuration conf = new Configuration();
         conf.set("fs.s3a.endpoint", s3Config.getEndpoint());

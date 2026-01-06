@@ -33,7 +33,6 @@ public class IcebergTableInitializer {
             Catalog catalog = new HadoopCatalog(hadoopConf, icebergConfig.getWarehouse());
 
             CreateIcebergTables.createOrdersTable(catalog);
-            CreateIcebergTables.createOrderDetailsTable(catalog);
 
             log.info("✔ Iceberg tables initialization complete.");
         } catch (Exception e) {
@@ -63,7 +62,6 @@ public class IcebergTableInitializer {
             Catalog catalog = new HadoopCatalog(conf, WAREHOUSE);
 
             CreateIcebergTables.createOrdersTable(catalog);
-            CreateIcebergTables.createOrderDetailsTable(catalog);
 
             log.info("✔ Iceberg tables initialization complete.");
         } catch (Exception e) {

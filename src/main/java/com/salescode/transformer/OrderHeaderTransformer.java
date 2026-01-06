@@ -115,6 +115,10 @@ public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, Objec
             row.put("discount_info",
                     feature.get("discountInfo") != null ? feature.get("discountInfo").toString() : null);
 
+            // orderDetails[] exists → store full JSON array as string
+            row.put("order_details",
+                    feature.get("orderDetails") != null ? feature.get("orderDetails").toString() : null);
+
             out.collect(row);
         }
     }
