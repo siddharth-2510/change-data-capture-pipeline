@@ -32,8 +32,7 @@ public class IcebergTableInitializer {
             Configuration hadoopConf = IcebergUtil.hadoopConf(s3Config);
             Catalog catalog = new HadoopCatalog(hadoopConf, icebergConfig.getWarehouse());
 
-            CreateIcebergTables.createOrdersTable(catalog);
-            CreateIcebergTables.createOrderDetailsTable(catalog);
+            CreateIcebergTables.createOrdersTable(catalog, icebergConfig.getDatabase());
 
             log.info("✔ Iceberg tables initialization complete.");
         } catch (Exception e) {
@@ -62,8 +61,7 @@ public class IcebergTableInitializer {
 
             Catalog catalog = new HadoopCatalog(conf, WAREHOUSE);
 
-            CreateIcebergTables.createOrdersTable(catalog);
-            CreateIcebergTables.createOrderDetailsTable(catalog);
+            CreateIcebergTables.createOrdersTable(catalog, "db");
 
             log.info("✔ Iceberg tables initialization complete.");
         } catch (Exception e) {

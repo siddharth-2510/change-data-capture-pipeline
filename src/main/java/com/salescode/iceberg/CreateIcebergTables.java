@@ -57,8 +57,7 @@ public class CreateIcebergTables {
 
         Catalog catalog = new HadoopCatalog(conf, icebergConfig.getWarehouse());
 
-        createOrdersTable(catalog);
-        createOrderDetailsTable(catalog);
+        createOrdersTable(catalog, icebergConfig.getDatabase());
 
         log.info("✔ All Iceberg tables are ready.");
     }
@@ -66,12 +65,12 @@ public class CreateIcebergTables {
     // ------------------------------------------------------------
     // CREATE db.orders TABLE (with CDC versioning)
     // ------------------------------------------------------------
-    public static void createOrdersTable(Catalog catalog) {
+    public static void createOrdersTable(Catalog catalog, String database) {
 
-        TableIdentifier tableId = TableIdentifier.of("db", "orders");
+        TableIdentifier tableId = TableIdentifier.of(database, "orders");
 
         if (catalog.tableExists(tableId)) {
-            log.info("✔ Table db.orders already exists. Skipping.");
+            log.info("✔ Table {}.orders already exists. Skipping.", database);
             return;
         }
 
@@ -141,113 +140,23 @@ public class CreateIcebergTables {
                 Types.NestedField.optional(56, "in_beat", Types.BooleanType.get()),
                 Types.NestedField.optional(57, "in_range", Types.BooleanType.get()),
                 Types.NestedField.optional(58, "nw", Types.DoubleType.get()),
-                Types.NestedField.optional(59, "reference_order_number", Types.StringType.get()));
+                Types.NestedField.optional(59, "reference_order_number", Types.StringType.get()),
+
+                // ============================================================
+                // Order Details (stored as JSON string)
+                // ============================================================
+                Types.NestedField.optional(60, "order_details", Types.StringType.get()));
 
         // ============================================================
-        // Partition Strategy: LOB + bucket + time-based
+        // Partition Strategy: LOB-based only (simplified for upsert compatibility)
         // ============================================================
         PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
-                .identity("lob") // Primary: LOB-based organization
-                .bucket("entity_id", 16) // Secondary: hash bucketing for distribution
-                .year("version_ts") // Tertiary: time-based for time-travel
+                .identity("lob") // Partition by LOB for data organization
                 .build();
 
         Table table = catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);
-        log.info("✔ Created Iceberg v2 table: db.orders (partitioned by entity_id + version_ts)");
-    }
-
-    // ------------------------------------------------------------
-    // CREATE db.order_details TABLE (with CDC versioning)
-    // ------------------------------------------------------------
-    public static void createOrderDetailsTable(Catalog catalog) {
-
-        TableIdentifier tableId = TableIdentifier.of("db", "order_details");
-
-        if (catalog.tableExists(tableId)) {
-            log.info("✔ Table db.order_details already exists. Skipping.");
-            return;
-        }
-
-        Schema schema = new Schema(
-                // ============================================================
-                // CDC Versioning Fields (required for tracking multiple versions)
-                // ============================================================
-                Types.NestedField.required(1, "entity_id", Types.StringType.get()),
-                Types.NestedField.required(2, "version_ts", Types.TimestampType.withZone()),
-                Types.NestedField.required(3, "event_type", Types.StringType.get()),
-                Types.NestedField.required(4, "ingest_ts", Types.TimestampType.withZone()),
-                Types.NestedField.required(5, "is_latest", Types.BooleanType.get()),
-
-                // ============================================================
-                // Original Business Fields (preserved from existing schema)
-                // ============================================================
-                Types.NestedField.required(6, "id", Types.StringType.get()),
-                Types.NestedField.optional(7, "active_status", Types.StringType.get()),
-                Types.NestedField.optional(8, "active_status_reason", Types.StringType.get()),
-                Types.NestedField.optional(9, "created_by", Types.StringType.get()),
-                Types.NestedField.optional(10, "creation_time", Types.TimestampType.withZone()),
-                Types.NestedField.optional(11, "extended_attributes", Types.StringType.get()),
-                Types.NestedField.optional(12, "hash", Types.StringType.get()),
-                Types.NestedField.optional(13, "last_modified_time", Types.TimestampType.withZone()),
-                Types.NestedField.optional(14, "lob", Types.StringType.get()),
-                Types.NestedField.optional(15, "modified_by", Types.StringType.get()),
-                Types.NestedField.optional(16, "source", Types.StringType.get()),
-                Types.NestedField.optional(17, "version", Types.IntegerType.get()),
-                Types.NestedField.optional(18, "system_time", Types.TimestampType.withZone()),
-                Types.NestedField.optional(19, "batch_code", Types.StringType.get()),
-                Types.NestedField.optional(20, "bill_amount", Types.DoubleType.get()),
-                Types.NestedField.optional(21, "case_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(22, "color", Types.StringType.get()),
-                Types.NestedField.optional(23, "discount_number", Types.StringType.get()),
-                Types.NestedField.optional(24, "discount_info", Types.StringType.get()),
-                Types.NestedField.optional(25, "initial_amount", Types.DoubleType.get()),
-                Types.NestedField.optional(26, "initial_case_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(27, "initial_other_unit_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(28, "initial_piece_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(29, "initial_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(30, "mrp", Types.DoubleType.get()),
-                Types.NestedField.optional(31, "name", Types.StringType.get()),
-                Types.NestedField.optional(32, "net_amount", Types.DoubleType.get()),
-                Types.NestedField.optional(33, "normalized_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(34, "other_unit_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(35, "piece_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(36, "product_info", Types.StringType.get()),
-                Types.NestedField.optional(37, "product_key", Types.StringType.get()),
-                Types.NestedField.optional(38, "quantity_unit", Types.StringType.get()),
-                Types.NestedField.optional(39, "size", Types.StringType.get()),
-                Types.NestedField.optional(40, "skucode", Types.StringType.get()),
-                Types.NestedField.optional(41, "status", Types.StringType.get()),
-                Types.NestedField.optional(42, "type", Types.StringType.get()),
-                Types.NestedField.optional(43, "unit_of_measurement", Types.StringType.get()),
-                Types.NestedField.optional(44, "price", Types.FloatType.get()),
-                Types.NestedField.optional(45, "location_hierarchy", Types.StringType.get()),
-                Types.NestedField.optional(46, "hierarchy", Types.StringType.get()),
-                Types.NestedField.optional(47, "order_id", Types.StringType.get()),
-                Types.NestedField.optional(48, "status_reason", Types.StringType.get()),
-                Types.NestedField.optional(49, "changed", Types.BooleanType.get()),
-                Types.NestedField.optional(50, "gps_latitude", Types.StringType.get()),
-                Types.NestedField.optional(51, "gps_longitude", Types.StringType.get()),
-                Types.NestedField.optional(52, "initial_normalized_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(53, "line_count", Types.IntegerType.get()),
-                Types.NestedField.optional(54, "normalized_volume", Types.FloatType.get()),
-                Types.NestedField.optional(55, "case_price", Types.FloatType.get()),
-                Types.NestedField.optional(56, "batch_ids", Types.StringType.get()),
-                Types.NestedField.optional(57, "other_unit_price", Types.FloatType.get()),
-                Types.NestedField.optional(58, "sales_quantity", Types.FloatType.get()),
-                Types.NestedField.optional(59, "sales_value", Types.DoubleType.get()),
-                Types.NestedField.optional(60, "nw", Types.DoubleType.get()),
-                Types.NestedField.optional(61, "site_id", Types.StringType.get()));
-
-        // ============================================================
-        // Partition Strategy: LOB + bucket + time-based
-        // ============================================================
-        PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
-                .identity("lob") // Primary: LOB-based organization
-                .bucket("entity_id", 16) // Secondary: hash bucketing for distribution
-                .month("version_ts") // Tertiary: time-based for time-travel
-                .build();
-
-        Table table = catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);
-        log.info("✔ Created Iceberg v2 table: db.order_details (partitioned by entity_id + version_ts)");
+        log.info(
+                "✔ Created Iceberg v2 table: {}.orders (partitioned by lob, with order_details as JSON, upsert-enabled)",
+                database);
     }
 }

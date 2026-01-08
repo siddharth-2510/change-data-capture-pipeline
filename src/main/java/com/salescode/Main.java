@@ -7,7 +7,6 @@ import com.salescode.iceberg.*;
 import com.salescode.sink.IcebergSinkBuilder;
 
 import com.salescode.transformer.OrderHeaderTransformer;
-import com.salescode.transformer.OrderDetailsTransformer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +20,7 @@ import org.apache.iceberg.flink.TableLoader;
 
 /**
  * Main Flink Application:
- * Kafka → Transform (Order Header + Order Details) → Iceberg (MinIO)
+ * Kafka → Transform (Order Header with Order Details as JSON) → Iceberg (S3)
  */
 @Slf4j
 public class Main {
@@ -47,7 +46,7 @@ public class Main {
                 log.info("Iceberg tables are ready.");
 
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
-                env.enableCheckpointing(300_000); // Checkpoint every 10 seconds
+                env.enableCheckpointing(100); // Checkpoint every 10 seconds
                 log.info("Checkpointing enabled (5min  interval)");
 
                 // ------------------------------------------------------------------
@@ -75,33 +74,18 @@ public class Main {
                 orderHeaderStream.print("ORDER_HEADER");
 
                 // ------------------------------------------------------------------
-                // 6️⃣ Transform → Order Details (ck_order_details)
+                // 6️⃣ Write to Iceberg Tables in S3
                 // ------------------------------------------------------------------
-                DataStream<ObjectNode> orderDetailsStream = kafkaStream.flatMap(new OrderDetailsTransformer());
-
-                orderDetailsStream.print("ORDER_DETAILS");
-
-                // ------------------------------------------------------------------
-                // 7️⃣ Write to Iceberg Tables in MinIO
-                // ------------------------------------------------------------------
-                log.info("Setting up Iceberg sinks...");
-
-                // Load table loaders for both tables
+                // Load table loader for orders table
                 TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg(), config.getS3());
-                TableLoader orderDetailsTableLoader = IcebergUtil.orderDetailsTableLoader(config.getIceberg(),
-                                config.getS3());
 
-                // Create and attach Iceberg sinks
+                // Create and attach Iceberg sink with upsert enabled
                 var orderHeaderSink = IcebergSinkBuilder.createOrderHeaderSink(orderHeaderStream, ordersTableLoader);
-                log.info("✔ Order Headers sink configured → db.orders");
-
-                var orderDetailsSink = IcebergSinkBuilder.createOrderDetailsSink(orderDetailsStream,
-                                orderDetailsTableLoader);
-                log.info("✔ Order Details sink configured → db.order_details");
+                log.info("✔ Order Headers sink configured → db.orders (with order_details as JSON, upsert enabled)");
 
                 // ------------------------------------------------------------------
-                // 8️⃣ Execute Flink Job
+                // 7️⃣ Execute Flink Job
                 // ------------------------------------------------------------------
-                env.execute("Flink Kafka → Iceberg Pipeline (Orders + OrderDetails)");
+                env.execute("Flink Kafka → Iceberg Pipeline (Orders with Deduplication)");
         }
 }
