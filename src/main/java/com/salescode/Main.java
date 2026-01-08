@@ -3,11 +3,9 @@ package com.salescode;
 import com.salescode.config.AppConfig;
 import com.salescode.config.ConfigLoader;
 import com.salescode.kafka.KafkaSourceBuilder;
-import com.salescode.iceberg.*;
 import com.salescode.sink.IcebergSinkBuilder;
-
 import com.salescode.transformer.OrderHeaderTransformer;
-import com.salescode.transformer.OrderDetailsTransformer;
+import com.salescode.iceberg.IcebergUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +19,7 @@ import org.apache.iceberg.flink.TableLoader;
 
 /**
  * Main Flink Application:
- * Kafka → Transform (Order Header + Order Details) → Iceberg (MinIO)
+ * Kafka → Transform Orders → Iceberg (AWS Glue/S3)
  */
 @Slf4j
 public class Main {
@@ -42,13 +40,9 @@ public class Main {
                 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
                 env.setParallelism(1);
 
-                log.info("Ensuring Iceberg tables exist....");
-                IcebergTableInitializer.ensureTablesExist(config);
-                log.info("Iceberg tables are ready.");
-
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
-                env.enableCheckpointing(300_000); // Checkpoint every 10 seconds
-                log.info("Checkpointing enabled (5min  interval)");
+                env.enableCheckpointing(300_000); // Checkpoint every 5 minutes
+                log.info("Checkpointing enabled (5min interval)");
 
                 // ------------------------------------------------------------------
                 // 3️⃣ Build Kafka Source using Config
@@ -68,40 +62,40 @@ public class Main {
                 kafkaStream.print("RAW FROM KAFKA");
 
                 // ------------------------------------------------------------------
-                // 5️⃣ Transform → Order Headers (ck_orders)
+                // 5️⃣ Transform → Orders
                 // ------------------------------------------------------------------
-                DataStream<ObjectNode> orderHeaderStream = kafkaStream.flatMap(new OrderHeaderTransformer());
+                DataStream<ObjectNode> orderStream = kafkaStream.flatMap(new OrderHeaderTransformer());
 
-                orderHeaderStream.print("ORDER_HEADER");
-
-                // ------------------------------------------------------------------
-                // 6️⃣ Transform → Order Details (ck_order_details)
-                // ------------------------------------------------------------------
-                DataStream<ObjectNode> orderDetailsStream = kafkaStream.flatMap(new OrderDetailsTransformer());
-
-                orderDetailsStream.print("ORDER_DETAILS");
+                orderStream.print("ORDERS");
 
                 // ------------------------------------------------------------------
-                // 7️⃣ Write to Iceberg Tables in MinIO
+                // 6️⃣ Configure Partition Spec (if needed)
                 // ------------------------------------------------------------------
-                log.info("Setting up Iceberg sinks...");
+                log.info("Configuring partition specification...");
+                try {
+                        com.salescode.iceberg.PartitionManager.addPartitionSpecIfNeeded(
+                                        config.getIceberg(),
+                                        config.getS3());
+                } catch (Exception e) {
+                        log.warn("Could not configure partitions (table may already be partitioned): {}",
+                                        e.getMessage());
+                }
 
-                // Load table loaders for both tables
+                // ------------------------------------------------------------------
+                // 7️⃣ Write to Iceberg Table in S3 via Glue Catalog
+                // ------------------------------------------------------------------
+                log.info("Setting up Iceberg sink...");
+
+                // Load table loader for orders table from Glue catalog
                 TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg(), config.getS3());
-                TableLoader orderDetailsTableLoader = IcebergUtil.orderDetailsTableLoader(config.getIceberg(),
-                                config.getS3());
 
-                // Create and attach Iceberg sinks
-                var orderHeaderSink = IcebergSinkBuilder.createOrderHeaderSink(orderHeaderStream, ordersTableLoader);
-                log.info("✔ Order Headers sink configured → db.orders");
-
-                var orderDetailsSink = IcebergSinkBuilder.createOrderDetailsSink(orderDetailsStream,
-                                orderDetailsTableLoader);
-                log.info("✔ Order Details sink configured → db.order_details");
+                // Create and attach Iceberg sink
+                var orderSink = IcebergSinkBuilder.createOrderSink(orderStream, ordersTableLoader);
+                log.info("✔ Orders sink configured → iceberg_db_test.ck_orders");
 
                 // ------------------------------------------------------------------
                 // 8️⃣ Execute Flink Job
                 // ------------------------------------------------------------------
-                env.execute("Flink Kafka → Iceberg Pipeline (Orders + OrderDetails)");
+                env.execute("Flink Kafka → Iceberg Pipeline (AWS Glue)");
         }
 }

@@ -1,18 +1,19 @@
 kafka:
   brokers: "164.52.202.184:9092"
   topic: "entity-change-events-1"
-  groupId: "flink-group-121111"
+  groupId: "flink-group-1201"
   readFromEarliest: false
 
 iceberg:
-  warehouse: "s3a://sc-developer-bucket"
-  catalog-name: "my_catalog"
-  database: "db"
-  table: "orders"
+  warehouse: "s3a://sc-developer-bucket/"
+  catalog-name: "glue_catalog"
+  catalog-type: "glue"
+  database: "iceberg_db_test"
+  table: "ck_orders"
 
 s3:
   endpoint: "https://s3.ap-south-1.amazonaws.com"
-  access-key: "ASIATQDQ4KPF7JEUEBHW"
-  secret-key: "rJKZoLrptNRTLH9m+GJVR6I7icDuI3qpeDulIoZn"
-  session-token: "IQoJb3JpZ2luX2VjEFsaCmFwLXNvdXRoLTEiRjBEAiBtYjKMoEfGWgCteVVD5+ZhCq4Q667cMsrSV0NIH7UjngIgY03h9PEtLEJWGeCgsgfPD0vfTY8m2R3SIqZkXqrwpAoqkQMIJBAAGgwyNDA3NTQ5MDYwNTkiDHuaIgudG5XUA2JNYSruAieekiJeSXIyy1sNaV4I1GXEltkyYWV7M1F/7l7xAO2BdAIIaCf0RZ2YxOb/H6vjAnqf4f/6UsGgDm0v+htxxdkietXu5+tYb/42v6zDXNW4qv33cfXdHiofGAES3knKDP894FUePGLGxVF7TH2//GVnap3QS3XHqHciCoF7Q3rON/p0vCASbIuwKTFdw7s/4n4IWQsJSizrqag1CAMOr7CGuoVF8nASRgXhTphFcmT8G5hK3K/BxGRA47l0tGGBJVhYmHqRdpN17LsA64sZZAa6aZAol2ZSQ9ntwEImwW5EyAoemTBu+QQSPh8nvK0+MJORbNpC+4TdHUptY8gtYlmw1xo1vRLM0bbK3gx39iuGX9tXqD5OvBm/90t3bdRz9itlDGNtXgmlZd5vI+H8s6SbtT9qR+3kVpaAN4eHsT3Mk9wI2bkFgcEX6NLxiwIfOEIAwupn3LjovBWa8rv3cNaFMkrF4cCN5NOrJuXY0jDemK/KBjqlAW6l5EYtMdZND48bQZvytdOBRXzSnKYDWw3wWLChDBPYctVjfwzLUU7/Gn1bzwQjhoj88xswLF3K2amlEnp19q0gcAuw75hgySiUuw/jmIhl7CiawSeaWR6sGVICenhlnQOGimXXqe2OwdWL2pIQML6xDyZGNp+NSqLhrvFM1Xj4pVcWFU7eaFd7UlyodXTyyxGf/kiLtRqOuZDRwr9bLOTysC+hPg=="
+  access-key: "ASIATQDQ4KPFQYHEAAJA"
+  secret-key: "8bI38NSE8DTe8zs+CYJLn+po3AReUVopBdvMNuaP"
+  session-token: "IQoJb3JpZ2luX2VjEK3//////////wEaCmFwLXNvdXRoLTEiRzBFAiEA6fPxQLWTeEaCavEXaCXhxUFmlv0mE9RvHqri4X8NrC8CICMAH2dgX8mxbC6gS5q+LaTBOZo0MKv3I8YPJvFGfn+5KpADCHYQABoMMjQwNzU0OTA2MDU5IgyPJmdc/PGuZss6k8cq7QIBftI0CdEe1GtB8TwNlBSE8kHk3K0DKmP/lti18BqGlqp2VRROPKadkcswrqjDKis3ZWRjVMJUSqsHjJbFH+ymUYpZjwKTbl3uqAppb7lY777SuXCzqOgX6e0P5I8lkqJe/yGJHqqX8D6DaoJMyzSGg64ezRJhe8AA4guU1VaDeVFLs2W/4+gIlFzYB4BXZV7y5P2hjanGb7+ZEXuovwZV9g44KhnKJHfXPFBlq6u+PQsVpR01KXNGW3lHr76EfVnIztHcKgwqRafRQifoOisGqTSyDpaUlNpDdCxuEfd5wt5V5wIuOXR0LOO7SM3PXsgFbL2k5rGwqNn4cd07ViO/v/oq4/NTt5OHhcfwOu/Rn+1+WJinh8avGL+AeZWSE5ZNbJ5NbkV3smVR6v30M1411cAb44sAzq5AZxq5HYzZyUTozEMdpJWxlWmRBqUUzpeAVQUoZBx81L7qp1u/Zk8DmtOFFHBlMs5Ee5iBqDDsufnKBjqkAaVysGsR6PKRycBiO81LSgsBXHAPe0KV/syf++LVKAZ0/rFxtrSC8MLJR+uGA0zJcTzOnZxnL2HkILl7eR4iSNrFhA4WrM7GQbOG3Sexze62grovMduvJ1m1gzNbCNMQ8genJXrjDh1Jko+vdKVWeSTTyfFF9ExuI0XzpDR9N7lyHsLGT7uS9fuDSJX3lMZCqQbUYDYEzsMFOJh4Ll5FFpQ0yyrE"
   path-style-access: false

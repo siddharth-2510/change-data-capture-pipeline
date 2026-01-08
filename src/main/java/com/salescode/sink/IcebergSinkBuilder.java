@@ -18,53 +18,46 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 /**
- * Builder utility for creating Iceberg sinks for Order Headers and Order
- * Details.
- * Supports CDC versioning fields (entity_id, version_ts, event_type, ingest_ts,
- * is_latest).
+ * Builder utility for creating Iceberg sink for Orders.
+ * Supports CDC versioning fields and UPSERT mode for deduplication.
  */
 @Slf4j
 public class IcebergSinkBuilder {
 
     /**
-     * Create an Iceberg sink for Order Headers (db.orders table)
+     * Create an Iceberg sink for Orders (iceberg_db_test.ck_orders table in AWS
+     * Glue)
+     * UPSERT MODE: Uses (entity_id, version_ts) as composite primary key
+     * - Same entity_id + same version_ts = duplicate (last write wins)
+     * - Same entity_id + different version_ts = new version (both kept)
      */
-    public static DataStreamSink<Void> createOrderHeaderSink(
+    public static DataStreamSink<Void> createOrderSink(
             DataStream<ObjectNode> stream,
             TableLoader tableLoader) {
 
-        DataStream<RowData> rowStream = stream.map(new OrderHeaderMapper());
+        DataStream<RowData> rowStream = stream.map(new OrderMapper());
 
         return FlinkSink.forRowData(rowStream)
                 .tableLoader(tableLoader)
                 .writeParallelism(1)
-                .append();
-    }
-
-    /**
-     * Create an Iceberg sink for Order Details (db.order_details table)
-     */
-    public static DataStreamSink<Void> createOrderDetailsSink(
-            DataStream<ObjectNode> stream,
-            TableLoader tableLoader) {
-
-        DataStream<RowData> rowStream = stream.map(new OrderDetailsMapper());
-
-        return FlinkSink.forRowData(rowStream)
-                .tableLoader(tableLoader)
-                .writeParallelism(1)
+                // Primary key for deduplication: entity_id + version_ts
+                // Same entity_id with different version_ts = new version (kept)
+                // Same entity_id with same version_ts = duplicate (replaced)
+                .equalityFieldColumns(java.util.Arrays.asList("entity_id", "version_ts"))
+                // Enable upsert mode: dedup based on primary key
+                .upsert(true)
                 .append();
     }
 
     // ============================================================
-    // Order Headers Mapper: ObjectNode → RowData
-    // Schema: 59 fields (5 versioning + 54 business)
+    // Order Mapper: ObjectNode → RowData
+    // Schema: 60 fields total (5 CDC versioning + 55 business fields)
     // ============================================================
-    private static class OrderHeaderMapper implements MapFunction<ObjectNode, RowData> {
+    private static class OrderMapper implements MapFunction<ObjectNode, RowData> {
 
         @Override
         public RowData map(ObjectNode node) throws Exception {
-            GenericRowData row = new GenericRowData(59);
+            GenericRowData row = new GenericRowData(60);
 
             // CDC Versioning Fields (indices 0-4)
             row.setField(0, toStringData(node, "entity_id")); // required
@@ -127,86 +120,9 @@ public class IcebergSinkBuilder {
             row.setField(55, toBoolean(node, "in_beat"));
             row.setField(56, toBoolean(node, "in_range"));
             row.setField(57, toDouble(node, "nw"));
-            row.setField(58, null); // reference_order_number
+            row.setField(58, null);
 
-            return row;
-        }
-    }
-
-    // ============================================================
-    // Order Details Mapper: ObjectNode → RowData
-    // Schema: 61 fields (5 versioning + 56 business)
-    // ============================================================
-    private static class OrderDetailsMapper implements MapFunction<ObjectNode, RowData> {
-
-        @Override
-        public RowData map(ObjectNode node) throws Exception {
-            GenericRowData row = new GenericRowData(61);
-
-            // CDC Versioning Fields (indices 0-4)
-            row.setField(0, toStringData(node, "entity_id")); // required
-            row.setField(1, toTimestamp(node, "version_ts")); // required
-            row.setField(2, toStringData(node, "event_type")); // required
-            row.setField(3, toTimestamp(node, "ingest_ts")); // required
-            row.setField(4, toBoolean(node, "is_latest")); // required
-
-            // Original Business Fields (indices 5-60)
-            row.setField(5, toStringData(node, "id")); // required
-            row.setField(6, null); // active_status
-            row.setField(7, null); // active_status_reason
-            row.setField(8, null); // created_by
-            row.setField(9, null); // creation_time
-            row.setField(10, null); // extended_attributes
-            row.setField(11, null); // hash
-            row.setField(12, null); // last_modified_time
-            row.setField(13, toStringData(node, "lob"));
-            row.setField(14, null); // modified_by
-            row.setField(15, null); // source
-            row.setField(16, null); // version
-            row.setField(17, null); // system_time
-            row.setField(18, toStringData(node, "batch_code"));
-            row.setField(19, toDouble(node, "bill_amount"));
-            row.setField(20, toFloat(node, "case_quantity"));
-            row.setField(21, null); // color
-            row.setField(22, null); // discount_number
-            row.setField(23, toStringData(node, "discount_info"));
-            row.setField(24, toDouble(node, "initial_amount"));
-            row.setField(25, toFloat(node, "initial_case_quantity"));
-            row.setField(26, toFloat(node, "initial_other_unit_quantity"));
-            row.setField(27, toFloat(node, "initial_piece_quantity"));
-            row.setField(28, toFloat(node, "initial_quantity"));
-            row.setField(29, toDouble(node, "mrp"));
-            row.setField(30, null); // name
-            row.setField(31, toDouble(node, "net_amount"));
-            row.setField(32, toFloat(node, "normalized_quantity"));
-            row.setField(33, null); // other_unit_quantity
-            row.setField(34, null); // piece_quantity
-            row.setField(35, toStringData(node, "product_info"));
-            row.setField(36, null); // product_key
-            row.setField(37, null); // quantity_unit
-            row.setField(38, null); // size
-            row.setField(39, toStringData(node, "skucode"));
-            row.setField(40, toStringData(node, "status"));
-            row.setField(41, null); // type
-            row.setField(42, null); // unit_of_measurement
-            row.setField(43, toFloat(node, "price"));
-            row.setField(44, toStringData(node, "location_hierarchy"));
-            row.setField(45, toStringData(node, "hierarchy"));
-            row.setField(46, toStringData(node, "order_id"));
-            row.setField(47, toStringData(node, "status_reason"));
-            row.setField(48, null); // changed
-            row.setField(49, null); // gps_latitude
-            row.setField(50, null); // gps_longitude
-            row.setField(51, toFloat(node, "initial_normalized_quantity"));
-            row.setField(52, null); // line_count
-            row.setField(53, toFloat(node, "normalized_volume"));
-            row.setField(54, toFloat(node, "case_price"));
-            row.setField(55, null); // batch_ids
-            row.setField(56, toFloat(node, "other_unit_price"));
-            row.setField(57, toFloat(node, "sales_quantity"));
-            row.setField(58, toDouble(node, "sales_value"));
-            row.setField(59, toDouble(node, "nw"));
-            row.setField(60, null); // site_id
+            row.setField(59, toStringData(node, "order_details"));
 
             return row;
         }

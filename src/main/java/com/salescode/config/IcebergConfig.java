@@ -11,7 +11,12 @@ public class IcebergConfig {
     @JsonProperty("catalog-name")
     private String catalogName;
 
+    @JsonProperty("catalog-type")
+    private String catalogType; // "glue" or "hadoop"
+
     private String database;
     private String table;
-}
 
+    @JsonProperty("glue-catalog-id")
+    private String glueCatalogId; // AWS account ID (optional)
+}

@@ -77,18 +77,30 @@
             <version>1.5.2</version>
         </dependency>
 
-        <!-- Iceberg AWS S3 integration (works for MinIO with S3A) -->
+        <!-- Iceberg AWS S3 integration + Glue Catalog -->
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-aws</artifactId>
             <version>1.5.2</version>
         </dependency>
 
-        <!-- Runtime support for catalog -->
+        <!-- AWS SDK for Glue (required for GlueCatalog) -->
         <dependency>
-            <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-hive-runtime</artifactId>
-            <version>1.5.2</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>glue</artifactId>
+            <version>2.20.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>2.20.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.20.26</version>
         </dependency>
 
         <!-- Hadoop S3A filesystem -->
@@ -111,25 +123,10 @@
             <version>3.3.5</version>
         </dependency>
 
-        <!-- Hadoop AWS: S3A filesystem (needed for MinIO) -->
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-aws</artifactId>
-            <version>3.3.5</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-flink-runtime-1.19</artifactId>
             <version>1.6.1</version>
-        </dependency>
-
-
-        <!-- Logging helps with debugging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.36</version>
         </dependency>
 
 

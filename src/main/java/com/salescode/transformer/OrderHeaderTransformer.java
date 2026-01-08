@@ -54,7 +54,7 @@ public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, Objec
             row.put("ingest_ts", Instant.now().toEpochMilli());
             row.put("is_latest", true);
 
-            // ============================================================
+
             // Original Business Fields
             // ============================================================
             row.put("id", text(feature, "id"));
@@ -114,6 +114,10 @@ public class OrderHeaderTransformer implements FlatMapFunction<ObjectNode, Objec
             // discountInfo[] exists → store full JSON
             row.put("discount_info",
                     feature.get("discountInfo") != null ? feature.get("discountInfo").toString() : null);
+
+            // orderDetails[] → store as JSON string (consolidated from separate table)
+            row.put("order_details",
+                    feature.get("orderDetails") != null ? feature.get("orderDetails").toString() : null);
 
             out.collect(row);
         }
