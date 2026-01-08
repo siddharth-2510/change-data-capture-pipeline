@@ -57,7 +57,7 @@ public class CreateIcebergTables {
 
         Catalog catalog = new HadoopCatalog(conf, icebergConfig.getWarehouse());
 
-        createOrdersTable(catalog);
+        createOrdersTable(catalog, icebergConfig);
 
         log.info("✔ All Iceberg tables are ready.");
     }
@@ -65,18 +65,19 @@ public class CreateIcebergTables {
     // ------------------------------------------------------------
     // CREATE db.orders TABLE (with CDC versioning)
     // ------------------------------------------------------------
-    public static void createOrdersTable(Catalog catalog) {
+    public static void createOrdersTable(Catalog catalog, IcebergConfig icebergConfig) {
 
-        TableIdentifier tableId = TableIdentifier.of("db1", "orders");
+        String database = icebergConfig.getDatabase();
+        String table = icebergConfig.getTable();
+        TableIdentifier tableId = TableIdentifier.of(database, table);
 
         if (catalog.tableExists(tableId)) {
-            log.info("✔ Table db1.orders already exists. Skipping.");
+            log.info("✔ Table {}.{} already exists. Skipping.", database, table);
             return;
         }
 
         Schema schema = new Schema(
                 // ============================================================
-                // CDC Versioning Fields (required for tracking multiple versions)
                 // ============================================================
                 Types.NestedField.required(1, "entity_id", Types.StringType.get()),
                 Types.NestedField.required(2, "version_ts", Types.TimestampType.withZone()),
@@ -156,8 +157,8 @@ public class CreateIcebergTables {
                 .year("version_ts") // Tertiary: time-based for time-travel
                 .build();
 
-        Table table = catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);
-        log.info("✔ Created Iceberg v2 table: db1.orders (partitioned by entity_id + version_ts)");
+        catalog.createTable(tableId, schema, partitionSpec, TABLE_PROPERTIES);
+        log.info("✔ Created Iceberg v2 table: {}.{} (partitioned by entity_id + version_ts)", database, table);
     }
 
 }

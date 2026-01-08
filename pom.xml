@@ -81,8 +81,16 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-aws</artifactId>
-            <version>1.5.2</version>
+            <version>1.6.1</version>
         </dependency>
+
+        <!-- Iceberg AWS Bundle (GlueCatalog + S3FileIO) -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-aws-bundle</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
 
         <!-- Runtime support for catalog -->
         <dependency>

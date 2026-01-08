@@ -47,7 +47,7 @@ public class Main {
                 log.info("Iceberg tables are ready.");
 
                 // Enable checkpointing (REQUIRED for Iceberg to commit data)
-                env.enableCheckpointing(30_000); // Checkpoint every 30 seconds
+                env.enableCheckpointing(30); // Checkpoint every 30 seconds
                 log.info("Checkpointing enabled (30s interval)");
 
                 // ------------------------------------------------------------------
@@ -79,8 +79,8 @@ public class Main {
                 // ------------------------------------------------------------------
                 log.info("Setting up Iceberg sinks...");
 
-                // Load table loader
-                TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg(), config.getS3());
+                // Load table loader (using Glue Catalog)
+                TableLoader ordersTableLoader = IcebergUtil.ordersTableLoader(config.getIceberg());
 
                 // Create and attach Iceberg sink
                 var orderHeaderSink = IcebergSinkBuilder.createOrderHeaderSink(orderHeaderStream, ordersTableLoader);
