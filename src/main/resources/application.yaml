@@ -1,0 +1,21 @@
+kafka:
+  brokers: "164.52.202.184:9092"
+  topic: "entity-change-events-1"
+  groupId: "flink-group-12111111011111111"
+  readFromEarliest: false
+
+iceberg:
+  warehouse: "s3://sc-developer-bucket/iceberg_db_test.db"
+  catalog-name: "glue_catalog"
+  catalog-type: "glue"
+  io-impl: "org.apache.iceberg.aws.s3.S3FileIO"
+  aws-region: "ap-south-1"
+  database: "iceberg_db_test"
+  table: "ck_orders"
+
+s3:
+  endpoint: "https://s3.ap-south-1.amazonaws.com"
+  # AWS credentials are loaded from SSO profile "DataLakeDeveloperAccess-240754906059"
+  # Do not set access-key, secret-key, or session-token here
+  path-style-access: false
+
